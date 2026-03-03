@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="AirportModelsLibrary/AirportModelsLibrary.csproj" />
+  <Project Path="AirportWebAPI/AirportWebAPI.csproj" />
+  <Project Path="FlightInfoScreen/FlightInfoScreen.csproj" />
+</Solution>
