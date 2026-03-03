@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using AirportModelsLibrary;
 using AirportWebAPI.Models;
+using AirportWebAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AirportWebAPI.Controllers
@@ -40,13 +41,13 @@ namespace AirportWebAPI.Controllers
 			if (existingDeparture == null)
 			{
 				_departures.Add(departure);
+				_departures = DepartureSort.SortByDepartureTime(_departures);
+				SaveChanges();
 			}
 			else
 			{
 				return;
 			}
-
-			SaveChanges();
 		}
 
 		[HttpPut("{id}")]
@@ -63,9 +64,9 @@ namespace AirportWebAPI.Controllers
 			{
 				_departures.Remove(deparetureToBeChanged);
 				_departures.Add(departure);
+				_departures = DepartureSort.SortByDepartureTime(_departures);
+				SaveChanges();
 			}
-
-			SaveChanges();
 		}
 
 		[HttpDelete("{id}")]
