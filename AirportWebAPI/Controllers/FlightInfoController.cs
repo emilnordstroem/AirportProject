@@ -14,6 +14,17 @@ namespace AirportWebAPI.Controllers
 		private List<FlightDeparture> _departures = new List<FlightDeparture>();
 		private string _sessionProperty = "Departures";
 
+		private void SaveChanges()
+		{
+			HttpContext.Session.SetString(
+				_sessionProperty,
+				JsonSerializer.Serialize(_departures)
+			);
+
+			publisher.PublishDepartures(_departures);
+		}
+
+
 		[HttpPost("api/flights/")]
 		public void RegisterFlightDeparture(FlightDeparture departure)
 		{
@@ -35,18 +46,26 @@ namespace AirportWebAPI.Controllers
 				return;
 			}
 
-			HttpContext.Session.SetString(
-				_sessionProperty,
-				JsonSerializer.Serialize(_departures)
-			);
-
-			publisher.PublishDepartures(_departures);
+			SaveChanges();
 		}
 
 		[HttpPut("api/flights/")]
 		public void UpdateFlightDeparture(long id, FlightDeparture departure)
 		{
-			throw new NotImplementedException();
+			if (HttpContext.Session.GetString(_sessionProperty) == null)
+			{
+				return;
+			}
+			_departures = JsonSerializer.Deserialize<List<FlightDeparture>>(HttpContext.Session.GetString(_sessionProperty));
+
+			FlightDeparture deparetureToBeChanged = _departures.Where(currentDeparture => currentDeparture.Id == id).FirstOrDefault();
+			if (deparetureToBeChanged != null)
+			{
+				_departures.Remove(deparetureToBeChanged);
+				_departures.Add(departure);
+			}
+
+			SaveChanges();
 		}
 
 		[HttpDelete("api/flights/")]
