@@ -11,6 +11,8 @@
 		public string Gate { get; set; }
 		public Status Status { get; set; }
 
+		public FlightDeparture() { }
+
 		public FlightDeparture(long id, DateTime depareturetime, string flightnumber, string destination, DateTime boardingtime, string gate, Status status)
 		{
 			if (_Id <= id)
