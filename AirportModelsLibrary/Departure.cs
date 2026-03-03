@@ -15,10 +15,10 @@
 
 		public FlightDeparture(long id, DateTime depareturetime, string flightnumber, string destination, DateTime boardingtime, string gate, Status status)
 		{
-			if (_Id <= id)
+			if (id != -1 && id >= _Id)
 			{
+				_Id = id + 1;
 				Id = id;
-				_Id = ++id;
 			}
 			else
 			{

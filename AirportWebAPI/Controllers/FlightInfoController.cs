@@ -27,52 +27,71 @@ namespace AirportWebAPI.Controllers
 
 
 		[HttpPost()]
-		public void RegisterFlightDeparture(FlightDeparture departure)
+		public IActionResult RegisterFlightDeparture(FlightDeparture departure)
 		{
 			if (HttpContext.Session.GetString(_sessionProperty) != null)
 			{
 				_departures = JsonSerializer.Deserialize<List<FlightDeparture>>(HttpContext.Session.GetString(_sessionProperty));
-
 			}
 
 			var existingDeparture = _departures.Where(
 				existingDeparture => existingDeparture.FlightNumber == departure.FlightNumber
 				&& existingDeparture.DepartureTime.Equals(departure.DepartureTime)).FirstOrDefault();
-			if (existingDeparture == null)
+			if (existingDeparture != null)
 			{
-				_departures.Add(departure);
-				_departures = DepartureSort.SortByDepartureTime(_departures);
-				SaveChanges();
+				return Conflict($"{departure.FlightNumber} {departure.DepartureTime} already exists.");
 			}
-			else
-			{
-				return;
-			}
+			_departures.Add(departure);
+			_departures = DepartureSort.SortByDepartureTime(_departures);
+			SaveChanges();
+			return Ok(departure);
 		}
 
 		[HttpPut("{id}")]
-		public void UpdateFlightDeparture(long id, FlightDeparture departure)
+		public IActionResult UpdateFlightDeparture(long id, FlightDeparture departure)
 		{
 			if (HttpContext.Session.GetString(_sessionProperty) == null)
 			{
-				return;
+				return Unauthorized("Session not found.");
 			}
-			_departures = JsonSerializer.Deserialize<List<FlightDeparture>>(HttpContext.Session.GetString(_sessionProperty));
+			_departures = JsonSerializer.Deserialize<List<FlightDeparture>>(
+				HttpContext.Session.GetString(_sessionProperty)
+			);
 
-			FlightDeparture deparetureToBeChanged = _departures.Where(currentDeparture => currentDeparture.Id == id).FirstOrDefault();
-			if (deparetureToBeChanged != null)
+			FlightDeparture departureToBeChanged = _departures.Where(currentDeparture => currentDeparture.Id == id).FirstOrDefault();
+			if (departureToBeChanged == null)
 			{
-				_departures.Remove(deparetureToBeChanged);
-				_departures.Add(departure);
-				_departures = DepartureSort.SortByDepartureTime(_departures);
-				SaveChanges();
+				return NotFound($"Departure with ID {id} not found.");
 			}
+			_departures.Remove(departureToBeChanged);
+			_departures.Add(departure);
+			_departures = DepartureSort.SortByDepartureTime(_departures);
+			SaveChanges();
+
+			return Ok(departure);
 		}
 
 		[HttpDelete("{id}")]
-		public void DeleteFlightDeparture(long id)
+		public IActionResult DeleteFlightDeparture(long id)
 		{
-			throw new NotImplementedException();
+			if (HttpContext.Session.GetString(_sessionProperty) == null)
+			{
+				return Unauthorized("Session not found.");
+			}
+			_departures = JsonSerializer.Deserialize<List<FlightDeparture>>(
+				HttpContext.Session.GetString(_sessionProperty)
+			);
+
+			FlightDeparture departureToBeDeleted = _departures.Where(currentDeparture => currentDeparture.Id == id).FirstOrDefault();
+			if (departureToBeDeleted == null)
+			{
+				return NotFound($"Departure with ID {id} not found.");
+			}
+			_departures.Remove(departureToBeDeleted);
+			_departures = DepartureSort.SortByDepartureTime(_departures);
+			SaveChanges();
+
+			return Ok(departureToBeDeleted);
 		}
 	}
 }
