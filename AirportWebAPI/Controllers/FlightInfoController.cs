@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AirportWebAPI.Controllers
 {
 	[ApiController]
-	[Route("[controller]")]
+	[Route("api/[controller]")]
 	public class FlightInfoController : Controller
 	{
 		private Publisher publisher = new Publisher();
@@ -25,7 +25,7 @@ namespace AirportWebAPI.Controllers
 		}
 
 
-		[HttpPost("api/flights/")]
+		[HttpPost()]
 		public void RegisterFlightDeparture(FlightDeparture departure)
 		{
 			if (HttpContext.Session.GetString(_sessionProperty) != null)
@@ -49,7 +49,7 @@ namespace AirportWebAPI.Controllers
 			SaveChanges();
 		}
 
-		[HttpPut("api/flights/")]
+		[HttpPut("{id}")]
 		public void UpdateFlightDeparture(long id, FlightDeparture departure)
 		{
 			if (HttpContext.Session.GetString(_sessionProperty) == null)
@@ -68,7 +68,7 @@ namespace AirportWebAPI.Controllers
 			SaveChanges();
 		}
 
-		[HttpDelete("api/flights/")]
+		[HttpDelete("{id}")]
 		public void DeleteFlightDeparture(long id)
 		{
 			throw new NotImplementedException();
