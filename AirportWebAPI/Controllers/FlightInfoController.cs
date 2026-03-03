@@ -17,22 +17,28 @@ namespace AirportWebAPI.Controllers
 		[HttpPost("api/flights/")]
 		public void RegisterFlightDeparture(FlightDeparture departure)
 		{
-			if (HttpContext.Session.GetString(_sessionProperty) == null)
-			{
-				HttpContext.Session.SetString(
-					_sessionProperty,
-					JsonSerializer.Serialize(_departures)
-				);
-			}
-			else
+			if (HttpContext.Session.GetString(_sessionProperty) != null)
 			{
 				_departures = JsonSerializer.Deserialize<List<FlightDeparture>>(HttpContext.Session.GetString(_sessionProperty));
+
 			}
 
-			if (!_departures.Contains(departure))
+			var existingDeparture = _departures.Where(
+				existingDeparture => existingDeparture.FlightNumber == departure.FlightNumber
+				&& existingDeparture.DepartureTime.Equals(departure.DepartureTime)).FirstOrDefault();
+			if (existingDeparture == null)
 			{
 				_departures.Add(departure);
 			}
+			else
+			{
+				return;
+			}
+
+			HttpContext.Session.SetString(
+				_sessionProperty,
+				JsonSerializer.Serialize(_departures)
+			);
 
 			publisher.PublishDepartures(_departures);
 		}
