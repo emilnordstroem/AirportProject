@@ -15,19 +15,21 @@ namespace AirportWebAPI.Controllers
 		private List<FlightDeparture> _departures = new List<FlightDeparture>();
 		private string _sessionProperty = "Departures";
 
-		private void SaveChanges()
+		// TIP: Session-data er unik for hver bruger. I et rigtigt system bør alle se de samme fly,
+		// så overvej en statisk liste (static) eller en fælles database-tabel i stedet.
+		private async Task SaveChanges()
 		{
 			HttpContext.Session.SetString(
 				_sessionProperty,
 				JsonSerializer.Serialize(_departures)
 			);
 
-			publisher.PublishDepartures(_departures);
+			await publisher.PublishDepartures(_departures);
 		}
 
 
 		[HttpPost()]
-		public IActionResult RegisterFlightDeparture(FlightDeparture departure)
+		public async Task<IActionResult> RegisterFlightDeparture(FlightDeparture departure)
 		{
 			if (HttpContext.Session.GetString(_sessionProperty) != null)
 			{
@@ -43,12 +45,12 @@ namespace AirportWebAPI.Controllers
 			}
 			_departures.Add(departure);
 			_departures = DepartureSort.SortByDepartureTime(_departures);
-			SaveChanges();
+			await SaveChanges();
 			return Ok(departure);
 		}
 
 		[HttpPut("{id}")]
-		public IActionResult UpdateFlightDeparture(long id, FlightDeparture departure)
+		public async Task<IActionResult> UpdateFlightDeparture(long id, FlightDeparture departure)
 		{
 			if (HttpContext.Session.GetString(_sessionProperty) == null)
 			{
@@ -66,13 +68,13 @@ namespace AirportWebAPI.Controllers
 			_departures.Remove(departureToBeChanged);
 			_departures.Add(departure);
 			_departures = DepartureSort.SortByDepartureTime(_departures);
-			SaveChanges();
+			await SaveChanges();
 
 			return Ok(departure);
 		}
 
 		[HttpDelete("{id}")]
-		public IActionResult DeleteFlightDeparture(long id)
+		public async Task<IActionResult> DeleteFlightDeparture(long id)
 		{
 			if (HttpContext.Session.GetString(_sessionProperty) == null)
 			{
@@ -89,7 +91,7 @@ namespace AirportWebAPI.Controllers
 			}
 			_departures.Remove(departureToBeDeleted);
 			_departures = DepartureSort.SortByDepartureTime(_departures);
-			SaveChanges();
+			await SaveChanges();
 
 			return Ok(departureToBeDeleted);
 		}

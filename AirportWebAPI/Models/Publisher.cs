@@ -7,7 +7,9 @@ namespace AirportWebAPI.Models
 {
 	public class Publisher
 	{
-		public async void PublishDepartures(List<FlightDeparture> departure)
+		// Pædagogisk tip: Brug altid 'async Task' i stedet for 'async void' (undtagen ved event handlers),
+		// så fejlene kan fanges og kaldet kan afventes (awaited).
+		public async Task PublishDepartures(List<FlightDeparture> departure)
 		{
 			var factory = new ConnectionFactory { HostName = "localhost" };
 			using var connection = await factory.CreateConnectionAsync();
