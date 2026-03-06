@@ -7,7 +7,7 @@ namespace AirportWebAPI.Models
 {
 	public class Publisher
 	{
-		public async void PublishDepartures(List<FlightDeparture> departure)
+		public async Task PublishDepartures(List<FlightDeparture> departure)
 		{
 			var factory = new ConnectionFactory { HostName = "localhost" };
 			using var connection = await factory.CreateConnectionAsync();

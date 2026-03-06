@@ -15,16 +15,15 @@ namespace AirportWebAPI.Controllers
 		private List<FlightDeparture> _departures = new List<FlightDeparture>();
 		private string _sessionProperty = "Departures";
 
-		private void SaveChanges()
+		private async void SaveChanges()
 		{
 			HttpContext.Session.SetString(
 				_sessionProperty,
 				JsonSerializer.Serialize(_departures)
 			);
 
-			publisher.PublishDepartures(_departures);
+			await publisher.PublishDepartures(_departures);
 		}
-
 
 		[HttpPost()]
 		public IActionResult RegisterFlightDeparture(FlightDeparture departure)
