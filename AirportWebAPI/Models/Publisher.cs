@@ -1,35 +1,52 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using AirportModelsLibrary;
 using RabbitMQ.Client;
 
 namespace AirportWebAPI.Models
 {
-	public class Publisher
+	public class Publisher : IAsyncDisposable
 	{
-		public async Task PublishDepartures(List<FlightDeparture> departure)
+		private readonly IConnection _connection;
+		private readonly IChannel _channel;
+
+		// Private constructor — use CreateAsync() instead
+		private Publisher(IConnection connection, IChannel channel)
+		{
+			_connection = connection;
+			_channel = channel;
+		}
+
+		public static async Task<Publisher> Create()
 		{
 			var factory = new ConnectionFactory { HostName = "localhost" };
-			using var connection = await factory.CreateConnectionAsync();
-			using var channel = await connection.CreateChannelAsync();
+			var connection = await factory.CreateConnectionAsync();
+			var channel = await connection.CreateChannelAsync();
+			await channel.ExchangeDeclareAsync("flightdepartures", ExchangeType.Fanout);
+			return new Publisher(connection, channel);
+		}
 
-			await channel.ExchangeDeclareAsync(
-				exchange: "flightdepartures",
-				type: ExchangeType.Fanout
-			);
-
-			var json = JsonSerializer.Serialize<List<FlightDeparture>>(departure);
+		public async Task PublishDepartures(List<FlightDeparture> departures)
+		{
+			var json = JsonSerializer.Serialize(departures);
 			var body = Encoding.UTF8.GetBytes(json);
 
-			await channel.BasicPublishAsync(
+			await _channel.BasicPublishAsync(
 				exchange: "flightdepartures",
 				routingKey: string.Empty,
 				body: body
 			);
-			Console.WriteLine($" [x] Sent {departure.ToString()}");
 
-			Console.WriteLine(" Press [enter] to exit.");
-			Console.ReadLine();
+			Console.WriteLine($" [x] Sent {departures.Count} departures");
+		}
+
+		public async ValueTask DisposeAsync()
+		{
+			await _channel.DisposeAsync();
+			await _connection.DisposeAsync();
 		}
 	}
 }
